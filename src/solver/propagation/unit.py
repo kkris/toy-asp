@@ -18,14 +18,16 @@ def propagate_singletons(instance, assignment):
     propagated_literals = set()
 
     for no_good in instance.no_goods:
-        if len(no_good.literals) == 1:
-            for literal in no_good:
-                complement = literal.complement()
+        if len(no_good.literals) != 1:
+            continue
 
-                if complement not in assignment:
-                    assignment.add(complement)
-                    propagated_literals.add(complement)
-                    instance.logger.debug("Propagate [SNGT] " + str(complement))
+        for literal in no_good:
+            complement = literal.complement()
+
+            if complement not in assignment:
+                assignment.add(complement)
+                propagated_literals.add(complement)
+                instance.logger.debug("Propagate [SNGT] " + str(complement))
 
     return propagated_literals
 
@@ -42,13 +44,6 @@ def propagate_step(instance, assignment, assigned_literal):
             continue
 
         watched_literals = instance.watcher.get_watches(no_good)
-
-        if len(watched_literals) == 1:
-            # only one unassigned literal
-            # this happens only for learned clauses after backtracking
-            complement = propagate_unit(instance, assignment, no_good, watched_literals[0])
-            propagated_literals.add(complement)
-            continue
 
         if assigned_literal == watched_literals[0]:
             other = watched_literals[1]
@@ -67,10 +62,7 @@ def propagate_step(instance, assignment, assigned_literal):
                 break
 
         if unassigned is not None:
-            if unassigned == assigned_literal:
-                a = 1
-            else:
-                instance.watcher.update_watch(assigned_literal, unassigned, no_good)
+            instance.watcher.update_watch(assigned_literal, unassigned, no_good)
         else:
             # propagate unit
             complement = propagate_unit(instance, assignment, no_good, other)
