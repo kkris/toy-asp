@@ -87,6 +87,10 @@ class LiteralSet(object):
         return item in self.literals
 
     def add(self, literal):
+        if literal in self.literals or literal.complement() in self.literals:
+            print("duplicate or inconsistent")
+            # raise ValueError("Should not happen")
+
         self.literals.add(literal)
 
     def size(self):
@@ -96,7 +100,7 @@ class LiteralSet(object):
         return iter(self.literals)
 
     def __str__(self):
-        return "{" + ", ".join(map(str, self.literals)) + "}"
+        return "{" + ", ".join(map(str, sorted(self.literals, key=lambda l: l.atom.identifier))) + "}"
 
     def __repr__(self):
         return str(self)
@@ -200,15 +204,35 @@ class Watcher(object):
 
         self.add_watch(new_literal, no_good)
 
-    def initialize_watches(self, no_good):
+    def initialize_watches(self, no_good, assignment, asserting_literal):
         if len(no_good.literals) <= 1:
             return
 
-        for index, watch in enumerate(no_good.literals):
-            if index == 2:
+        # self.add_watch(asserting_literal, no_good)
+
+        last = None
+        count = 0
+        for watch in no_good.literals:
+            if count == 2:
                 break
 
-            self.add_watch(watch, no_good)
+            if watch not in assignment:
+                # TODO: check only for atom?
+                self.add_watch(watch, no_good)
+                last = watch
+                count += 1
+
+        if count == 0:
+            raise ValueError("Ups")
+        if count == 1:
+            for literal in no_good:
+                if literal != last:
+                    self.add_watch(literal, no_good)
+                    count += 1
+                    break
+
+        if count != 2 and len(no_good.literals) > 1:
+            raise ValueError("ups")
 
     def lookup(self, literal):
         return self.no_goods[literal]
@@ -227,7 +251,7 @@ class Instance(object):
 
         self.logger = logging.getLogger('asp')
         self.logger.setLevel(logging.DEBUG)
-        # self.logger.setLevel(logging.ERROR)
+        self.logger.setLevel(logging.INFO)
 
         handler = logging.StreamHandler()
         handler.setLevel(logging.DEBUG)
@@ -236,7 +260,32 @@ class Instance(object):
     def size(self):
         return len(self.atoms)
 
-    def add_no_good(self, no_good):
+    def add_no_good(self, no_good, assignment, asserting_literal):
+        if str(no_good) == "{F(0), F(2), T(4), F(5), F(14)}":
+            a = 1
+
+        if no_good in self.no_goods:
+            self.sanity_check(assignment)
+            return True
+            # raise ValueError("No good already present")
+
         self.no_goods.append(no_good)
-        self.watcher.initialize_watches(no_good)
+        self.watcher.initialize_watches(no_good, assignment, asserting_literal)
+
+        self.sanity_check(assignment)
+
+        return False
+
+    def sanity_check(self, assignment):
+        if assignment.size() == 0:
+            return
+
+        for no_good in self.no_goods:
+            if assignment.contains_complement(no_good) or assignment.contains(no_good):
+                continue
+
+            if all(literal in assignment for literal in self.watcher.get_watches(no_good)):
+                raise ValueError("ups")
+
+
 

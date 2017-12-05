@@ -39,7 +39,7 @@ def test_instances():
 
         assert result == solution
 
-    for instance, is_sat in LARGE_INSTANCES[:3]:
+    for instance, is_sat in LARGE_INSTANCES:
         result = solve_cdnl(instance)
 
         if is_sat:

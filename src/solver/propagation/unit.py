@@ -25,7 +25,8 @@ def propagate_singletons(instance, assignment):
                 if complement not in assignment:
                     assignment.add(complement)
                     propagated_literals.add(complement)
-                    instance.logger.debug("Propagate [SNGT] " + str(complement))
+                    # instance.logger.debug("Propagate [SNGT] " + str(complement))
+                    print("Propagate [SNGT] " + str(complement))
 
     return propagated_literals
 
@@ -37,11 +38,19 @@ def propagate_step(instance, assignment, assigned_literal):
         if assignment.contains(no_good):
             # no good already falsified
             continue
-        elif assignment.contains_complement(no_good):
+        if assignment.contains_complement(no_good):
             # already satisfied
             continue
 
         watched_literals = instance.watcher.get_watches(no_good)
+
+        if len(watched_literals) == 1:
+            # only one unassigned literal
+            # this happens only for learned clauses after backtracking
+            complement = propagate_unit(instance, assignment, no_good, watched_literals[0])
+            propagated_literals.add(complement)
+            continue
+
         if assigned_literal == watched_literals[0]:
             other = watched_literals[1]
         else:
@@ -59,18 +68,28 @@ def propagate_step(instance, assignment, assigned_literal):
                 break
 
         if unassigned is not None:
-            instance.watcher.update_watch(assigned_literal, unassigned, no_good)
+            if unassigned == assigned_literal:
+                a = 1
+            else:
+                instance.watcher.update_watch(assigned_literal, unassigned, no_good)
         else:
             # propagate unit
-            complement = other.complement()
-            assignment.add(complement)
+            complement = propagate_unit(instance, assignment, no_good, other)
             propagated_literals.add(complement)
 
-            dl = max(instance.state.get_decision_level_for(literal) for literal in no_good if literal != other)
-
-            instance.state.set_implicant(complement, no_good)
-            instance.state.set_decision_level_for(complement, dl)
-
-            instance.logger.debug("Propagate [UNIT] " + str(complement))
-
     return propagated_literals
+
+
+def propagate_unit(instance, assignment, no_good, literal):
+    complement = literal.complement()
+    assignment.add(complement)
+
+    dl = max(instance.state.get_decision_level_for(l) for l in no_good if l != literal)
+
+    instance.state.set_implicant(complement, no_good)
+    instance.state.set_decision_level_for(complement, dl)
+
+    # instance.logger.debug("Propagate [UNIT] " + str(complement))
+    print("Propagate [UNIT] " + str(complement))
+
+    return complement
