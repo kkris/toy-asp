@@ -87,10 +87,6 @@ class LiteralSet(object):
         return item in self.literals
 
     def add(self, literal):
-        if literal in self.literals or literal.complement() in self.literals:
-            print("duplicate or inconsistent")
-            # raise ValueError("Should not happen")
-
         self.literals.add(literal)
 
     def size(self):
@@ -185,14 +181,7 @@ class Watcher(object):
         self.no_goods = defaultdict(list)
 
         for no_good in no_goods:
-            if len(no_good.literals) <= 1:
-                continue
-
-            for index, watch in enumerate(no_good.literals):
-                if index == 2:
-                    break
-
-                self.add_watch(watch, no_good)
+            self.initialize_watches(no_good, Assignment())
 
     def add_watch(self, literal, no_good):
         self.watches[no_good].append(literal)
@@ -204,35 +193,33 @@ class Watcher(object):
 
         self.add_watch(new_literal, no_good)
 
-    def initialize_watches(self, no_good, assignment, asserting_literal):
+    def initialize_watches(self, no_good, assignment):
         if len(no_good.literals) <= 1:
+            # don't watch singleton no-goods
+            # they are unit by default or already satisfied/conflicting
             return
 
-        # self.add_watch(asserting_literal, no_good)
+        # try to find two unassigned literals to watch
+        watches = []
+        for literal in no_good:
+            if literal not in assignment:
+                watches.append(literal)
 
-        last = None
-        count = 0
-        for watch in no_good.literals:
-            if count == 2:
+            if len(watches) == 2:
                 break
 
-            if watch not in assignment:
-                # TODO: check only for atom?
-                self.add_watch(watch, no_good)
-                last = watch
-                count += 1
-
-        if count == 0:
-            raise ValueError("Ups")
-        if count == 1:
+        if len(watches) == 1:
+            # in the case of a learned no-good, there is only one unassigned atom
+            # just add the next literal not already selected as a second watch
             for literal in no_good:
-                if literal != last:
-                    self.add_watch(literal, no_good)
-                    count += 1
+                if literal != watches[0]:
+                    watches.append(literal)
                     break
 
-        if count != 2 and len(no_good.literals) > 1:
-            raise ValueError("ups")
+        for watch in watches:
+            self.add_watch(watch, no_good)
+
+        return
 
     def lookup(self, literal):
         return self.no_goods[literal]
@@ -260,32 +247,11 @@ class Instance(object):
     def size(self):
         return len(self.atoms)
 
-    def add_no_good(self, no_good, assignment, asserting_literal):
-        if str(no_good) == "{F(0), F(2), T(4), F(5), F(14)}":
-            a = 1
-
+    def add_no_good(self, no_good, assignment):
         if no_good in self.no_goods:
-            self.sanity_check(assignment)
             return True
-            # raise ValueError("No good already present")
 
         self.no_goods.append(no_good)
-        self.watcher.initialize_watches(no_good, assignment, asserting_literal)
-
-        self.sanity_check(assignment)
+        self.watcher.initialize_watches(no_good, assignment)
 
         return False
-
-    def sanity_check(self, assignment):
-        if assignment.size() == 0:
-            return
-
-        for no_good in self.no_goods:
-            if assignment.contains_complement(no_good) or assignment.contains(no_good):
-                continue
-
-            if all(literal in assignment for literal in self.watcher.get_watches(no_good)):
-                raise ValueError("ups")
-
-
-

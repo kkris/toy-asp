@@ -21,20 +21,19 @@ def solve(instance, backtrack_fn):
     while True:
         conflict = find_conflict(instance, assignment)
 
-        print("Conflict: " + str(conflict))
+        if conflict is not None:
+            logger.info("Conflict: " + str(conflict))
 
         if conflict is not None:
             if state.get_current_dl() == 0:
-                # logger.info("Instance not satisfiable")
-                print("Instance not satisfiable")
+                logger.info("Instance not satisfiable")
                 return None
             else:
                 backtrack_fn(instance, assignment, conflict)
                 continue
 
         if assignment.size() == instance.size():
-            # logger.info("Found satisfying assignment: " + str(assignment))
-            print("Found satisfying assignment: " + str(assignment))
+            logger.info("Found satisfying assignment: " + str(assignment))
             return assignment
         else:
             # guess
@@ -48,14 +47,10 @@ def solve(instance, backtrack_fn):
 
             assignment.add(guess)
 
-            # logger.info("Guess " + str(guess) + "@" + str(state.get_current_dl()))
-            print("Guess " + str(guess) + "@" + str(state.get_current_dl()))
-
-            logger.debug("Assignment: " + str(assignment))
+            logger.info("Guess " + str(guess) + "@" + str(state.get_current_dl()))
 
             # propagate after guess
             propagate(instance, assignment, guess)
-            logger.debug("Assignment: " + str(assignment))
 
 
 def select_unassigned_atom(instance, assignment):
@@ -79,11 +74,9 @@ def backtrack_dpll(instance, assignment, conflict=None):
 
     k = state.compute_greatest_level_with_alternative(assignment)
 
-    for atom in state.get_assigned_atoms_beyond(k):
-        if T(atom) in assignment:
-            assignment.remove(T(atom))
-        if F(atom) in assignment:
-            assignment.remove(F(atom))
+    for literal in state.get_assigned_literals_beyond(k):
+        if literal in assignment:
+            assignment.remove(literal)
 
     guess = state.get_guess_at(k + 1)
     state.decrease_dl()
@@ -101,54 +94,44 @@ def backtrack_dpll(instance, assignment, conflict=None):
 
 
 def backtrack_cdnl(instance, assignment, conflict):
-    instance.logger.debug("Resolving conflict " + str(conflict))
+    state = instance.state
 
-    if str(conflict) == "{T(5), F(10), F(19)}":
-        a = 1
+    instance.logger.debug("Resolving conflict " + str(conflict))
 
     learned_no_good, k = analyse_conflict_1uip(instance, assignment, conflict)
 
+    instance.logger.debug("Learned no-good: " + str(learned_no_good))
     instance.logger.debug("Backtrack to " + str(k))
 
-    for atom in instance.state.get_assigned_atoms_beyond(k):
-        if T(atom) in assignment:
-            assignment.remove(T(atom))
-        if F(atom) in assignment:
-            assignment.remove(F(atom))
+    # back-jump to second-highest decision level
+    for literal in state.get_assigned_literals_beyond(k):
+        if literal in assignment:
+            assignment.remove(literal)
 
-    instance.state.set_decision_level(k)
+    state.set_decision_level(k)
 
+    # find the literal in the learned no-good which is asserting
     asserting_literal = None
     for literal in learned_no_good:
         if literal not in assignment:
             asserting_literal = literal
             break
 
-    if asserting_literal is None:
-        raise ValueError("Ups")
-    #if k == 0:
-    #    asserting_literal = None
-    #else:
-    #    asserting_literal = instance.state.get_guess_at(k)
-
     instance.logger.debug("Asserting literal: " + str(asserting_literal))
-    print("Learned: " + str(learned_no_good))
-    print("Backtracked to " + str(k))
-    print("Assignment: " + str(assignment))
-    print("Asserting literal: " + str(asserting_literal))
 
-    duplicate = instance.add_no_good(learned_no_good, assignment, asserting_literal)
+    is_duplicate = instance.add_no_good(learned_no_good, assignment)
 
-    if duplicate:
-        a = 1
+    if is_duplicate:
+        instance.logger.debug("Learned already know no-good")
 
+    # learned no-good is unit
     complement = asserting_literal.complement()
     assignment.add(complement)
 
-    instance.state.set_decision_level_for(complement, instance.state.get_current_dl())
-    instance.state.set_implicant(complement, learned_no_good)
+    state.set_decision_level_for(complement, state.get_current_dl())
+    state.set_implicant(complement, learned_no_good)
 
-    # propagate after guess
+    # propagate after force by learned clause
     propagate(instance, assignment, complement)
 
 
@@ -165,35 +148,21 @@ def analyse_conflict_1uip(instance, assignment, conflict):
 
     while contains_distinct_literals_assigned_at(no_good, state, max_dl):
         resolvent = select_resolvent(no_good, state, max_dl)
-
-        if resolvent is None:
-            raise ValueError("Should not happen")
-
         implicant = state.get_implicant(resolvent)
 
-        print("\nResolve on " + str(resolvent))
-        print(str(no_good))
-        print(str(implicant))
+        literals = set()
+        for literal in implicant:
+            if literal != resolvent.complement():
+                literals.add(literal)
+        for literal in no_good:
+            if literal != resolvent:
+                literals.add(literal)
 
-        xs = set()
-        for x in implicant:
-            if x != resolvent.complement():
-                xs.add(x)
-        for x in no_good:
-            if x != resolvent:
-                xs.add(x)
-
-        no_good = NoGood.of(*xs)
-        print(str(no_good))
-        instance.logger.debug("State: " + str(no_good))
-
-    # instance.logger.info("Learned: " + str(no_good))
+        no_good = NoGood.of(*literals)
 
     levels = sorted(set(state.get_decision_level_for(literal) for literal in no_good))
     if -1 in levels:
         levels.remove(-1)
-
-    instance.logger.debug("Levels: " + str(levels))
 
     if len(levels) == 1:
         k = 0

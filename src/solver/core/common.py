@@ -5,7 +5,7 @@ class State(object):
         self.implicants = {}
 
         self.guesses = {}
-        self.decision_levels_for_atoms = {}
+        self.decision_levels_for_literals = {}
 
     def get_current_dl(self):
         return self.current_dl
@@ -34,13 +34,13 @@ class State(object):
         return self.guesses[dl]
 
     def get_decision_level_for(self, literal):
-        if literal.atom not in self.decision_levels_for_atoms:
+        if literal not in self.decision_levels_for_literals:
             return -1
 
-        return self.decision_levels_for_atoms[literal.atom]
+        return self.decision_levels_for_literals[literal]
 
     def set_decision_level_for(self, literal, dl):
-        self.decision_levels_for_atoms[literal.atom] = dl
+        self.decision_levels_for_literals[literal] = dl
 
     def compute_greatest_level_with_alternative(self, assignment):
         # compute k
@@ -51,7 +51,7 @@ class State(object):
 
         return j - 1
 
-    def get_assigned_atoms_beyond(self, k):
-        for literal, dl in self.decision_levels_for_atoms.items():
+    def get_assigned_literals_beyond(self, k):
+        for literal, dl in self.decision_levels_for_literals.items():
             if dl > k:
                 yield literal

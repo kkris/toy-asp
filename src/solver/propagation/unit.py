@@ -25,8 +25,7 @@ def propagate_singletons(instance, assignment):
                 if complement not in assignment:
                     assignment.add(complement)
                     propagated_literals.add(complement)
-                    # instance.logger.debug("Propagate [SNGT] " + str(complement))
-                    print("Propagate [SNGT] " + str(complement))
+                    instance.logger.debug("Propagate [SNGT] " + str(complement))
 
     return propagated_literals
 
@@ -89,7 +88,6 @@ def propagate_unit(instance, assignment, no_good, literal):
     instance.state.set_implicant(complement, no_good)
     instance.state.set_decision_level_for(complement, dl)
 
-    # instance.logger.debug("Propagate [UNIT] " + str(complement))
-    print("Propagate [UNIT] " + str(complement))
+    instance.logger.debug("Propagate [UNIT] " + str(complement))
 
     return complement
