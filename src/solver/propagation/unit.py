@@ -1,5 +1,4 @@
 def propagate(instance, assignment, changed_literal=None):
-    inferred = set()
     changed = set()
 
     for propagated in propagate_singletons(instance, assignment):
@@ -13,9 +12,6 @@ def propagate(instance, assignment, changed_literal=None):
         propagated = propagate_step(instance, assignment, literal)
         for l in propagated:
             changed.add(l)
-            inferred.add(l)
-
-    return inferred
 
 
 def propagate_singletons(instance, assignment):
@@ -69,6 +65,11 @@ def propagate_step(instance, assignment, assigned_literal):
             complement = other.complement()
             assignment.add(complement)
             propagated_literals.add(complement)
+
+            dl = max(instance.state.get_decision_level_for(literal) for literal in no_good if literal != other)
+
+            instance.state.set_implicant(complement, no_good)
+            instance.state.set_decision_level_for(complement, dl)
 
             instance.logger.debug("Propagate [UNIT] " + str(complement))
 

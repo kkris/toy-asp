@@ -3,6 +3,9 @@ import logging
 from enum import Enum
 from collections import defaultdict
 
+from solver.core.common import State
+
+
 class Sign(Enum):
     NEGATIVE = 0
     POSITIVE = 1
@@ -38,6 +41,12 @@ class SignedLiteral(object):
 
     def complement(self):
         return SignedLiteral(self.atom, self.sign.complement())
+
+    def is_positive(self):
+        return self.sign == Sign.POSITIVE
+
+    def is_negative(self):
+        return self.sign == Sign.NEGATIVE
 
     def __eq__(self, other):
         return self.sign == other.sign and self.atom == other.atom
@@ -204,6 +213,7 @@ class Instance(object):
         self.atoms = atoms
         self.no_goods = no_goods
         self.watcher = Watcher(no_goods)
+        self.state = State()
 
         self.logger = logging.getLogger('asp')
         self.logger.setLevel(logging.DEBUG)

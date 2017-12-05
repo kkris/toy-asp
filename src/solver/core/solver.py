@@ -1,53 +1,44 @@
 from solver.model import Assignment, F, T
 from solver.propagation.unit import propagate
+from solver.core.common import State
 
 
 def solve(instance):
     logger = instance.logger
 
+    state = instance.state
     assignment = Assignment()
-    current_dl = 0
 
-    guesses = {}
-    dl = {}
-    implicants = {}
-
-    updated = propagate(instance, assignment)
-    for literal in updated:
-        dl[literal] = current_dl
+    propagate(instance, assignment)
 
     while True:
         backtracked = False
 
         for no_good in instance.no_goods:
             if assignment.contains(no_good):
-                if current_dl == 0:
+                if state.get_current_dl() == 0:
                     logger.debug("Instance not satisfiable")
                     return None
                 else:
-                    k = max((i if guesses[i] in assignment else 1) for i in range(1, current_dl + 1)) - 1
+                    k = state.compute_greatest_level_with_alternative(assignment)
 
-                    for literal in list(dl.keys()):
-                        level = dl[literal]
-                        if level > k:
-                            assignment.remove(literal) # remove only positive?
-                            del dl[literal]
+                    for literal in state.get_literals_beyond(k):
+                        if literal in assignment:
+                            assignment.remove(literal)
 
-                    guess = guesses[k + 1]
-                    current_dl -= 1
+                    guess = state.get_guess_at(k + 1)
+                    state.decrease_dl()
 
                     complement = guess.complement()
                     assignment.add(complement)
 
-                    dl[complement] = k
-                    implicants[complement] = None
+                    state.set_implicant(complement, None)
+                    state.set_decision_level_for(complement, k)
 
-                    logger.debug("Backtrack to " + str(current_dl))
+                    logger.debug("Backtrack to " + str(state.get_current_dl()))
 
                     # propagate after guess
-                    updated = propagate(instance, assignment, guess)
-                    for literal in updated:
-                        dl[literal] = current_dl
+                    propagate(instance, assignment, guess)
 
                     backtracked = True
                     break
@@ -63,20 +54,18 @@ def solve(instance):
             atom = select_unassigned_atom(instance, assignment)
             guess = F(atom)
 
-            current_dl += 1
-            guesses[current_dl] = guess
-            dl[guess] = current_dl
-            implicants[guess] = None
+            state.increase_dl()
+            state.set_implicant(guess, None)
+            state.add_guess(guess, state.get_current_dl())
+            state.set_decision_level_for(guess, state.get_current_dl())
 
             assignment.add(guess)
 
-            logger.debug("Guess " + str(guess) + "@" + str(current_dl))
+            logger.debug("Guess " + str(guess) + "@" + str(state.get_current_dl()))
             logger.debug("Assignment: " + str(assignment))
 
             # propagate after guess
-            updated = propagate(instance, assignment, guess)
-            for literal in updated:
-                dl[literal] = current_dl
+            propagate(instance, assignment, guess)
             logger.debug("Assignment: " + str(assignment))
 
 
