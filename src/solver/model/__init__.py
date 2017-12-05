@@ -238,7 +238,7 @@ class Instance(object):
 
         self.logger = logging.getLogger('asp')
         self.logger.setLevel(logging.DEBUG)
-        self.logger.setLevel(logging.INFO)
+        # self.logger.setLevel(logging.INFO)
 
         handler = logging.StreamHandler()
         handler.setLevel(logging.DEBUG)

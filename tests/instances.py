@@ -47,6 +47,30 @@ def _create_trivial_sat():
     return instance, solution
 
 
+def _create_example_2():
+    # N 1 : {Fa, Tb}, N 2 : {Fa, Tc}, N 3 : {Fb, Fc, Td}, N 4 : {Fd, Te}, N 5 : {Fd, Tf }, N 6 : {Fe, Ff }
+
+    a = Atom(1, "a")
+    b = Atom(2, "b")
+    c = Atom(3, "c")
+    d = Atom(4, "d")
+    e = Atom(5, "e")
+    f = Atom(6, "f")
+
+    no_goods = [
+        NoGood.of(F(a), T(b)),
+        NoGood.of(F(a), T(c)),
+        NoGood.of(F(b), F(c), T(d)),
+        NoGood.of(F(d), T(e)),
+        NoGood.of(F(d), T(f)),
+        NoGood.of(F(e), F(f))
+    ]
+
+    solution = Assignment.of(T(d), T(a), F(b), T(c), F(e), T(f))
+
+    return Instance([a, b, c, d, e, f], no_goods), solution
+
+
 def _load_instances():
     instances = []
     for file in os.listdir("resources"):
@@ -60,7 +84,8 @@ def _load_instances():
 INSTANCES = [
     _create_unsat(),
     _create_trivial_sat(),
-    _create_vote_instance()
+    _create_vote_instance(),
+    _create_example_2()
 ]
 
 LARGE_INSTANCES = _load_instances()
