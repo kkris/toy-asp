@@ -200,6 +200,16 @@ class Watcher(object):
 
         self.add_watch(new_literal, no_good)
 
+    def initialize_watches(self, no_good):
+        if len(no_good.literals) <= 1:
+            return
+
+        for index, watch in enumerate(no_good.literals):
+            if index == 2:
+                break
+
+            self.add_watch(watch, no_good)
+
     def lookup(self, literal):
         return self.no_goods[literal]
 
@@ -217,6 +227,7 @@ class Instance(object):
 
         self.logger = logging.getLogger('asp')
         self.logger.setLevel(logging.DEBUG)
+        # self.logger.setLevel(logging.ERROR)
 
         handler = logging.StreamHandler()
         handler.setLevel(logging.DEBUG)
@@ -224,4 +235,8 @@ class Instance(object):
 
     def size(self):
         return len(self.atoms)
+
+    def add_no_good(self, no_good):
+        self.no_goods.append(no_good)
+        self.watcher.initialize_watches(no_good)
 

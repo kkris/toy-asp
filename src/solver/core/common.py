@@ -16,6 +16,9 @@ class State(object):
     def decrease_dl(self):
         self.current_dl -= 1
 
+    def set_decision_level(self, level):
+        self.current_dl = level
+
     def get_implicant(self, literal):
         if literal in self.implicants:
             return self.implicants[literal]
