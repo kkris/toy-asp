@@ -74,6 +74,22 @@ def _create_example_2():
 def _load_instances():
     instances = []
     for file in os.listdir("resources"):
+        if "large" in file:
+            continue
+
+        with open(os.path.join("resources", file)) as fh:
+            contents = fh.read()
+            instances.append(parse(contents))
+
+    return instances
+
+
+def _load_huge_instances():
+    instances = []
+    for file in os.listdir("resources"):
+        if "large" not in file:
+            continue
+
         with open(os.path.join("resources", file)) as fh:
             contents = fh.read()
             instances.append(parse(contents))
@@ -89,3 +105,5 @@ INSTANCES = [
 ]
 
 LARGE_INSTANCES = _load_instances()
+
+REALLY_LARGE_INSTANCES = _load_huge_instances()

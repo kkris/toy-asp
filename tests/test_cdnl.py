@@ -2,6 +2,21 @@ from solver.model import *
 from solver.core.solver import solve_cdnl, analyse_conflict_1uip
 
 
+def test_simple():
+    a = Atom(1, "a")
+    b = Atom(2, "b")
+
+    no_goods = [
+        NoGood.of(F(a), F(b))
+    ]
+
+    instance = Instance([a, b], no_goods)
+
+    solutions = solve_cdnl(instance, all_solutions=True)
+
+    assert len(solutions) == 3
+
+
 def test_example():
     a = Atom(1, "a")
     b = Atom(2, "b")
@@ -32,14 +47,14 @@ def test_example():
 
 
 def test_instances():
-    from instances import INSTANCES, LARGE_INSTANCES
+    from instances import INSTANCES, LARGE_INSTANCES, REALLY_LARGE_INSTANCES
 
     for instance, solution in INSTANCES:
         result = solve_cdnl(instance)
 
         assert result == solution
 
-    for instance, is_sat in LARGE_INSTANCES:
+    for instance, is_sat in LARGE_INSTANCES + REALLY_LARGE_INSTANCES:
         result = solve_cdnl(instance)
 
         if is_sat:

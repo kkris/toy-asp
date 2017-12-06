@@ -2,15 +2,16 @@ from solver.model import Assignment, T, F, NoGood
 from solver.propagation.unit import propagate
 
 
-def solve_dpll(instance):
-    return solve(instance, backtrack_dpll)
+def solve_dpll(instance, all_solutions=False):
+    return solve(instance, backtrack_dpll, all_solutions)
 
 
-def solve_cdnl(instance):
-    return solve(instance, backtrack_cdnl)
+def solve_cdnl(instance, all_solutions=False):
+    return solve(instance, backtrack_cdnl, all_solutions)
 
 
-def solve(instance, backtrack_fn):
+def solve(instance, backtrack_fn, all_solutions=False):
+    solutions = []
     logger = instance.logger
 
     state = instance.state
@@ -27,14 +28,28 @@ def solve(instance, backtrack_fn):
         if conflict is not None:
             if state.get_current_dl() == 0:
                 logger.info("Instance not satisfiable")
-                return None
+                if all_solutions:
+                    return solutions
+                else:
+                    return None
             else:
                 backtrack_fn(instance, assignment, conflict)
                 continue
 
         if assignment.size() == instance.size():
             logger.info("Found satisfying assignment: " + str(assignment))
-            return assignment
+            if all_solutions:
+                copy = Assignment.of(*assignment.literals)
+                solutions.append(copy)
+
+                # backtrack to highest level with an alternative decision not tried yet
+                backtrack_dpll(instance, assignment)
+
+                if state.get_current_dl() == -1:
+                    # no backtracking possible anymore: found all solutions
+                    return solutions
+            else:
+                return assignment
         else:
             # guess
             atom = select_unassigned_atom(instance, assignment)

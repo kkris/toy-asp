@@ -2,6 +2,20 @@ from solver.model import *
 from solver.core.solver import solve_dpll
 
 
+def test_simple():
+    a = Atom(1, "a")
+    b = Atom(2, "b")
+
+    no_goods = [
+        NoGood.of(F(a), F(b))
+    ]
+
+    instance = Instance([a, b], no_goods)
+
+    solutions = solve_dpll(instance, all_solutions=True)
+
+    assert len(solutions) == 3
+
 def test_example():
     a = Atom(1, "a")
     b = Atom(2, "b")
