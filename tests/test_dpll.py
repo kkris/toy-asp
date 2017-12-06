@@ -1,5 +1,5 @@
 from solver.model import *
-from solver.core.solver import solve_dpll
+from solver.sat.solver import solve_dpll
 
 
 def test_simple():

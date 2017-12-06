@@ -1,5 +1,5 @@
 from solver.model import *
-from solver.core.solver import solve_cdnl, analyse_conflict_1uip
+from solver.sat.solver import solve_cdnl, analyse_conflict_1uip
 
 
 def test_simple():

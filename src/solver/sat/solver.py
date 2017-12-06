@@ -42,12 +42,12 @@ def solve(instance, backtrack_fn, all_solutions=False):
                 copy = Assignment.of(*assignment.literals)
                 solutions.append(copy)
 
-                # backtrack to highest level with an alternative decision not tried yet
-                backtrack_dpll(instance, assignment)
-
-                if state.get_current_dl() == -1:
+                if state.get_current_dl() == 0:
                     # no backtracking possible anymore: found all solutions
                     return solutions
+
+                # backtrack to highest level with an alternative decision not tried yet
+                backtrack_dpll(instance, assignment)
             else:
                 return assignment
         else:

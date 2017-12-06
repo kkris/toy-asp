@@ -3,7 +3,7 @@ import logging
 from enum import Enum
 from collections import defaultdict
 
-from solver.core.common import State
+from solver.sat.common import State
 
 
 class Sign(Enum):
