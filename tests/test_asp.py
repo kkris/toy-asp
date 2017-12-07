@@ -49,3 +49,32 @@ def test_negation():
 
     assert len(solutions) == 1
     assert Assignment.of(F(a), T(b)) == solutions[0]
+
+
+def test_ewbs_1():
+    man = Atom(1, "man")
+    single = Atom(2, "single")
+    husband = Atom(3, "husband")
+
+    rules = [
+        (man, []),
+        (single, [T(man), F(husband)]),
+        (husband, [T(man), F(single)])
+    ]
+
+    solutions = solve(rules)
+
+    assert len(solutions) == 2
+    assert Assignment.of(T(man), T(single), F(husband)) in solutions
+    assert Assignment.of(T(man), F(single), T(husband)) in solutions
+
+
+def test_killing_clause():
+    p = Atom(1, "p")
+    rules = [
+        (p, [F(p)]),
+    ]
+
+    solutions = solve(rules)
+
+    assert len(solutions) == 0

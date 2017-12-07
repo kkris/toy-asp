@@ -25,7 +25,6 @@ def solve(instance, backtrack_fn, all_solutions=False):
         if conflict is not None:
             logger.info("Conflict: " + str(conflict))
 
-        if conflict is not None:
             if state.get_current_dl() == 0:
                 logger.info("Instance not satisfiable")
                 if all_solutions:
@@ -38,6 +37,7 @@ def solve(instance, backtrack_fn, all_solutions=False):
 
         if assignment.size() == instance.size():
             logger.info("Found satisfying assignment: " + str(assignment))
+
             if all_solutions:
                 copy = Assignment.of(*assignment.literals)
                 solutions.append(copy)
@@ -137,7 +137,7 @@ def backtrack_cdnl(instance, assignment, conflict):
     is_duplicate = instance.add_no_good(learned_no_good, assignment)
 
     if is_duplicate:
-        instance.logger.debug("Learned already know no-good")
+        instance.logger.debug("Learned already known no-good")
 
     # learned no-good is unit
     complement = asserting_literal.complement()
