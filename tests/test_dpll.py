@@ -14,7 +14,22 @@ def test_simple():
 
     solutions = solve_dpll(instance, all_solutions=True)
 
-    assert len(solutions) == 3
+    assert len(list(solutions)) == 3
+
+
+def test_unsat():
+    a = Atom(1, "a")
+    no_goods = [
+        NoGood.of(F(a)),
+        NoGood.of(T(a))
+    ]
+
+    instance = Instance([a], no_goods)
+
+    solutions = solve_dpll(instance, all_solutions=True)
+
+    assert list(solutions) == []
+
 
 def test_example():
     a = Atom(1, "a")
@@ -36,7 +51,7 @@ def test_example():
 
     instance = Instance(atoms, no_goods)
 
-    assignment = solve_dpll(instance)
+    assignment = list(solve_dpll(instance))[0]
 
     assert T(a) in assignment
     assert F(b) in assignment
@@ -49,14 +64,14 @@ def test_instances():
     from instances import INSTANCES, LARGE_INSTANCES
 
     for instance, solution in INSTANCES:
-        result = solve_dpll(instance)
+        result = list(solve_dpll(instance))
 
         assert result == solution
 
     for instance, is_sat in LARGE_INSTANCES[:3]:
-        result = solve_dpll(instance)
+        result = list(solve_dpll(instance))
 
         if is_sat:
-            assert result is not None
+            assert len(result) >= 1
         else:
-            assert result is None
+            assert result == []

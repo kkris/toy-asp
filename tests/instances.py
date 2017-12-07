@@ -27,7 +27,7 @@ def _create_vote_instance():
     instance = Instance(atoms, no_goods)
     solution = Assignment.of(T(a), F(b), T(c))
 
-    return instance, solution
+    return instance, [solution]
 
 
 def _create_unsat():
@@ -35,7 +35,7 @@ def _create_unsat():
 
     instance = Instance([a], [NoGood.of(T(a)), NoGood.of(F(a))])
 
-    return instance, None
+    return instance, []
 
 
 def _create_trivial_sat():
@@ -44,7 +44,7 @@ def _create_trivial_sat():
     instance = Instance([a], [NoGood.of(T(a), F(a))])  # a v -a
     solution = Assignment.of(F(a))
 
-    return instance, solution
+    return instance, [solution]
 
 
 def _create_example_2():
@@ -68,7 +68,7 @@ def _create_example_2():
 
     solution = Assignment.of(T(d), T(a), F(b), T(c), F(e), T(f))
 
-    return Instance([a, b, c, d, e, f], no_goods), solution
+    return Instance([a, b, c, d, e, f], no_goods), [solution]
 
 
 def _load_instances():

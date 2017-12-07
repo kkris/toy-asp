@@ -3,15 +3,26 @@ from solver.propagation.unit import propagate
 
 
 def solve_dpll(instance, all_solutions=False):
-    return solve(instance, backtrack_dpll, all_solutions)
+    solutions = solve(instance, backtrack_dpll, all_solutions)
+
+    if all_solutions:
+        for solution in solutions:
+            yield solution
+    else:
+        yield next(solutions)
 
 
 def solve_cdnl(instance, all_solutions=False):
-    return solve(instance, backtrack_cdnl, all_solutions)
+    solutions = solve(instance, backtrack_cdnl, all_solutions)
+
+    if all_solutions:
+        for solution in solutions:
+            yield solution
+    else:
+        yield next(solutions)
 
 
 def solve(instance, backtrack_fn, all_solutions=False):
-    solutions = []
     logger = instance.logger
 
     state = instance.state
@@ -27,10 +38,7 @@ def solve(instance, backtrack_fn, all_solutions=False):
 
             if state.get_current_dl() == 0:
                 logger.info("Instance not satisfiable")
-                if all_solutions:
-                    return solutions
-                else:
-                    return None
+                return
             else:
                 backtrack_fn(instance, assignment, conflict)
                 continue
@@ -40,16 +48,18 @@ def solve(instance, backtrack_fn, all_solutions=False):
 
             if all_solutions:
                 copy = Assignment.of(*assignment.literals)
-                solutions.append(copy)
+
+                yield copy
 
                 if state.get_current_dl() == 0:
                     # no backtracking possible anymore: found all solutions
-                    return solutions
+                    return
 
                 # backtrack to highest level with an alternative decision not tried yet
                 backtrack_dpll(instance, assignment)
             else:
-                return assignment
+                yield assignment
+                return
         else:
             # guess
             atom = select_unassigned_atom(instance, assignment)

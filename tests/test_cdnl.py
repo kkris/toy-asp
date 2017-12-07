@@ -14,7 +14,21 @@ def test_simple():
 
     solutions = solve_cdnl(instance, all_solutions=True)
 
-    assert len(solutions) == 3
+    assert len(list(solutions)) == 3
+
+
+def test_unsat():
+    a = Atom(1, "a")
+    no_goods = [
+        NoGood.of(F(a)),
+        NoGood.of(T(a))
+    ]
+
+    instance = Instance([a], no_goods)
+
+    solutions = solve_cdnl(instance, all_solutions=True)
+
+    assert list(solutions) == []
 
 
 def test_example():
@@ -37,7 +51,7 @@ def test_example():
 
     instance = Instance(atoms, no_goods)
 
-    assignment = solve_cdnl(instance)
+    assignment = next(solve_cdnl(instance))
 
     assert T(a) in assignment
     assert F(b) in assignment
@@ -50,17 +64,17 @@ def test_instances():
     from instances import INSTANCES, LARGE_INSTANCES, REALLY_LARGE_INSTANCES
 
     for instance, solution in INSTANCES:
-        result = solve_cdnl(instance)
+        result = list(solve_cdnl(instance))
 
         assert result == solution
 
     for instance, is_sat in LARGE_INSTANCES + REALLY_LARGE_INSTANCES:
-        result = solve_cdnl(instance)
+        result = list(solve_cdnl(instance))
 
         if is_sat:
-            assert result is not None
+            assert len(result) >= 1
         else:
-            assert result is None
+            assert result == []
 
 
 def test_1uip():
