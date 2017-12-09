@@ -13,6 +13,6 @@ def solve(rules):
 
     original_atoms, instance = compute_clarks_completion(atoms, rules)
 
-    solutions = solve_dpll(instance, all_solutions=True) 
+    solutions = solve_dpll(instance, all_solutions=True)
 
     return list(map(lambda s: project(s, original_atoms), solutions))
