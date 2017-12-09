@@ -12,14 +12,10 @@ def solve_dpll(instance, all_solutions=False):
         yield next(solutions)
 
 
-def solve_cdnl(instance, all_solutions=False):
-    solutions = solve(instance, backtrack_cdnl, all_solutions)
+def solve_cdnl(instance):
+    solutions = solve(instance, backtrack_cdnl, all_solutions=False)
 
-    if all_solutions:
-        for solution in solutions:
-            yield solution
-    else:
-        yield next(solutions)
+    yield next(solutions)
 
 
 def solve(instance, backtrack_fn, all_solutions=False):
@@ -114,8 +110,7 @@ def backtrack_dpll(instance, assignment, conflict=None):
 
     instance.logger.debug("Backtrack to " + str(state.get_current_dl()))
 
-    # propagate after guess
-    propagate(instance, assignment, guess)
+    propagate(instance, assignment, complement)
 
 
 def backtrack_cdnl(instance, assignment, conflict):
@@ -168,8 +163,6 @@ def analyse_conflict_1uip(instance, assignment, conflict):
     max_dl = 0
     for literal in assignment:
         max_dl = max(max_dl, state.get_decision_level_for(literal))
-
-    instance.logger.debug("max dl: " + str(max_dl))
 
     while contains_distinct_literals_assigned_at(no_good, state, max_dl):
         resolvent = select_resolvent(no_good, state, max_dl)

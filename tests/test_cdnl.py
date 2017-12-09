@@ -12,9 +12,10 @@ def test_simple():
 
     instance = Instance([a, b], no_goods)
 
-    solutions = solve_cdnl(instance, all_solutions=True)
+    solution = list(solve_cdnl(instance))[0]
 
-    assert len(list(solutions)) == 3
+    assert F(a) in solution
+    assert T(b) in solution
 
 
 def test_unsat():
@@ -26,9 +27,9 @@ def test_unsat():
 
     instance = Instance([a], no_goods)
 
-    solutions = solve_cdnl(instance, all_solutions=True)
+    solution = list(solve_cdnl(instance))
 
-    assert list(solutions) == []
+    assert solution == []
 
 
 def test_example():

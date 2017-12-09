@@ -31,6 +31,22 @@ def test_unsat():
     assert list(solutions) == []
 
 
+def test_all():
+    a = Atom(1, "a")
+    b = Atom(2, "b")
+    c = Atom(3, "c")
+
+    no_goods = [
+        NoGood.of(F(a), F(b), F(c))
+    ]
+
+    instance = Instance([a, b, c], no_goods)
+
+    solutions = list(solve_dpll(instance, all_solutions=True))
+
+    assert len(solutions) == 7
+
+
 def test_example():
     a = Atom(1, "a")
     b = Atom(2, "b")
@@ -68,8 +84,8 @@ def test_instances():
 
         assert result == solution
 
-    for instance, is_sat in LARGE_INSTANCES[:3]:
-        result = list(solve_dpll(instance))
+    for instance, is_sat in LARGE_INSTANCES:
+        result = list(solve_dpll(instance, all_solutions=True))
 
         if is_sat:
             assert len(result) >= 1
