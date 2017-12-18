@@ -112,11 +112,8 @@ def test_1uip():
     state.set_implicant(T(x), no_goods[6])
     state.set_implicant(F(y), no_goods[2])
 
-    learned, k = analyse_conflict_1uip(instance, assignment, no_goods[3])
+    learned, asserting_literal, k = analyse_conflict_1uip(instance, assignment, no_goods[3])
 
     assert k == 0
     assert learned == NoGood.of(F(a))
-
-    # assignment = solve_cdnl(instance)
-
-    analyse_conflict_1uip
+    assert asserting_literal == F(a)

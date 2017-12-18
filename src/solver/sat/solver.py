@@ -119,9 +119,9 @@ def backtrack_cdnl(instance, assignment, conflict):
 
     instance.logger.debug("Resolving conflict " + str(conflict))
 
-    learned_no_good, k = analyse_conflict_1uip(instance, assignment, conflict)
+    learned_no_good, asserting_literal, k = analyse_conflict_1uip(instance, assignment, conflict)
 
-    instance.logger.info("Learned no-good: " + str(learned_no_good))
+    instance.logger.info("Learned no-good: " + str(learned_no_good) + " (" + str(asserting_literal) + " is asserting)")
     instance.logger.info("Backtrack to " + str(k))
 
     # back-jump to second-highest decision level
@@ -130,16 +130,6 @@ def backtrack_cdnl(instance, assignment, conflict):
             assignment.remove(literal)
 
     state.set_decision_level(k)
-
-    # find the literal in the learned no-good which is asserting
-    asserting_literal = None
-    for literal in learned_no_good:
-        if literal not in assignment:
-            asserting_literal = literal
-            break
-
-    instance.logger.debug("Asserting literal: " + str(asserting_literal))
-
     is_duplicate = instance.add_no_good(learned_no_good, assignment)
 
     if is_duplicate:
@@ -188,7 +178,15 @@ def analyse_conflict_1uip(instance, assignment, conflict):
     else:
         k = levels[-2]  # second-highest decision level
 
-    return no_good, k
+    highest_dl = levels[-1]
+
+    asserting_literal = None
+    for literal in state.get_literals_assigned_at(highest_dl):
+        if literal in no_good:
+            asserting_literal = literal
+            break
+
+    return no_good, asserting_literal, k
 
 
 def contains_distinct_literals_assigned_at(no_good, state, dl):

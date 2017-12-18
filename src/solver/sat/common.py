@@ -55,3 +55,8 @@ class State(object):
         for literal, dl in self.decision_levels_for_literals.items():
             if dl > k:
                 yield literal
+
+    def get_literals_assigned_at(self, target_dl):
+        for literal, dl in self.decision_levels_for_literals.items():
+            if dl == target_dl:
+                yield literal
