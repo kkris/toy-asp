@@ -7,8 +7,8 @@ def test_example():
     b = Atom(2, "b")
 
     rules = [
-        (a, [T(b)]),
-        (b, [T(a)])
+        ([T(a)], [T(b)]),
+        ([T(b)], [T(a)])
     ]
 
     solutions = solve(rules)
@@ -25,9 +25,9 @@ def test_facts():
     d = Atom(4, "d")
 
     rules = [
-        (a, []),
-        (b, []),
-        (c, [T(d)])
+        ([T(a)], []),
+        ([T(b)], []),
+        ([T(c)], [T(d)])
     ]
 
     solutions = solve(rules)
@@ -41,8 +41,8 @@ def test_negation():
     b = Atom(2, "b")
 
     rules = [
-        (a, [F(b)]),
-        (b, [])
+        ([T(a)], [F(b)]),
+        ([T(b)], [])
     ]
 
     solutions = solve(rules)
@@ -57,9 +57,9 @@ def test_ewbs_1():
     husband = Atom(3, "husband")
 
     rules = [
-        (man, []),
-        (single, [T(man), F(husband)]),
-        (husband, [T(man), F(single)])
+        ([T(man)], []),
+        ([T(single)], [T(man), F(husband)]),
+        ([T(husband)], [T(man), F(single)])
     ]
 
     solutions = solve(rules)
@@ -72,9 +72,19 @@ def test_ewbs_1():
 def test_killing_clause():
     p = Atom(1, "p")
     rules = [
-        (p, [F(p)]),
+        ([T(p)], [F(p)]),
     ]
 
     solutions = solve(rules)
 
     assert len(solutions) == 0
+
+
+def test_instances():
+    from instances import ASP_INSTANCES
+
+    for (rules, expected) in ASP_INSTANCES:
+        solutions = solve(rules)
+
+        for s in solutions:
+            assert s in expected

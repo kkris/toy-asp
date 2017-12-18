@@ -255,3 +255,15 @@ class Instance(object):
         self.watcher.initialize_watches(no_good, assignment)
 
         return False
+
+
+class AtomFactory(object):
+
+    def __init__(self, sequence_start):
+        self.current_id = sequence_start
+
+    def create_atom(self, name="new"):
+        atom = Atom(self.current_id, name)
+        self.current_id += 1
+
+        return atom

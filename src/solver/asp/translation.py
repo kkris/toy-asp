@@ -18,18 +18,6 @@ class Rule(object):
         self.atom = atom_factory.create_atom(name)
 
 
-class AtomFactory(object):
-
-    def __init__(self, sequence_start):
-        self.current_id = sequence_start
-
-    def create_atom(self, name="new"):
-        atom = Atom(self.current_id, name)
-        self.current_id += 1
-
-        return atom
-
-
 def compute_clarks_completion(atoms, raw_rules):
     atom_factory = AtomFactory(len(atoms) + 1)
 
@@ -56,9 +44,15 @@ def compute_clarks_completion(atoms, raw_rules):
 def translate_rule(rule):
     no_goods = gamma(rule.body, rule.atom)
 
-    no_goods.append(
-        NoGood.of(T(rule.atom), F(rule.head))
-    )
+    if len(rule.head) > 0:
+        no_goods.append(
+            NoGood.of(T(rule.atom), F(rule.head[0].atom))
+        )
+    else:
+        # constraint
+        no_goods.append(
+            NoGood.of(T(rule.atom))
+        )
 
     return no_goods
 
@@ -69,8 +63,9 @@ def translate_atom_support(atoms, rules):
     for atom in atoms:
         literals = [T(atom)]
         for rule in rules:
-            if atom == rule.head:
-                literals.append(F(rule.atom))
+            for head_literal in rule.head:
+                if atom == head_literal.atom:
+                    literals.append(F(rule.atom))
 
         no_goods.append(NoGood.of(*literals))
 

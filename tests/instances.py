@@ -2,6 +2,7 @@ import os
 
 from solver.model import *
 from solver.parser.dimacs import parse
+from solver.parser.asp import parse as parse_asp
 
 
 class CheckSat(object):
@@ -73,11 +74,11 @@ def _create_example_2():
 
 def _load_instances():
     instances = []
-    for file in os.listdir("resources"):
+    for file in os.listdir("resources/sat"):
         if "large" in file:
             continue
 
-        with open(os.path.join("resources", file)) as fh:
+        with open(os.path.join("resources/sat", file)) as fh:
             contents = fh.read()
             instances.append(parse(contents))
 
@@ -86,13 +87,23 @@ def _load_instances():
 
 def _load_huge_instances():
     instances = []
-    for file in os.listdir("resources"):
+    for file in os.listdir("resources/sat"):
         if "large" not in file:
             continue
 
-        with open(os.path.join("resources", file)) as fh:
+        with open(os.path.join("resources/sat", file)) as fh:
             contents = fh.read()
             instances.append(parse(contents))
+
+    return instances
+
+
+def _load_asp_instances():
+    instances = []
+    for file in os.listdir("resources/asp"):
+        with open(os.path.join("resources/asp", file)) as fh:
+            contents = fh.read()
+            instances.append(parse_asp(contents))
 
     return instances
 
@@ -107,3 +118,5 @@ INSTANCES = [
 LARGE_INSTANCES = _load_instances()
 
 REALLY_LARGE_INSTANCES = _load_huge_instances()
+
+ASP_INSTANCES = _load_asp_instances()

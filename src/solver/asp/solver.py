@@ -5,7 +5,9 @@ from solver.asp.translation import compute_clarks_completion, project
 def solve(rules):
     atoms = set()
     for (head, body) in rules:
-        atoms.add(head)
+        for literal in head:
+            atoms.add(literal.atom)
+
         for literal in body:
             atoms.add(literal.atom)
 
