@@ -33,9 +33,10 @@ def solve(instance, backtrack_fn, all_solutions=False):
             logger.info("Conflict: " + str(conflict))
 
             if state.get_current_dl() == 0:
-                logger.info("Instance not satisfiable")
+                logger.info("Conflict at dl 0. Exiting.")
                 return
             else:
+                logger.debug("Backtracking..")
                 backtrack_fn(instance, assignment, conflict)
                 continue
 
@@ -120,8 +121,8 @@ def backtrack_cdnl(instance, assignment, conflict):
 
     learned_no_good, k = analyse_conflict_1uip(instance, assignment, conflict)
 
-    instance.logger.debug("Learned no-good: " + str(learned_no_good))
-    instance.logger.debug("Backtrack to " + str(k))
+    instance.logger.info("Learned no-good: " + str(learned_no_good))
+    instance.logger.info("Backtrack to " + str(k))
 
     # back-jump to second-highest decision level
     for literal in state.get_assigned_literals_beyond(k):

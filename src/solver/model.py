@@ -1,8 +1,7 @@
-import logging
-
 from enum import Enum
 from collections import defaultdict
 
+from solver.logger import Level, Logger
 from solver.sat.common import State
 
 
@@ -236,13 +235,7 @@ class Instance(object):
         self.watcher = Watcher(no_goods)
         self.state = State()
 
-        self.logger = logging.getLogger('asp')
-        self.logger.setLevel(logging.DEBUG)
-        # self.logger.setLevel(logging.INFO)
-
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(handler)
+        self.logger = Logger()
 
     def size(self):
         return len(self.atoms)

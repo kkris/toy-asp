@@ -38,7 +38,11 @@ def compute_clarks_completion(atoms, raw_rules):
     for rule in rules:
         all_atoms.append(rule.atom)
 
-    return atoms, Instance(all_atoms, translated)
+    instance = Instance(all_atoms, translated)
+
+    instance.logger.debug("Translated: " + str(translated))
+
+    return atoms, instance
 
 
 def translate_rule(rule):

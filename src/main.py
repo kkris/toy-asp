@@ -1,6 +1,8 @@
 import os
 import argparse
 
+from solver.logger import set_level, Level
+
 from solver.parser.asp import parse as parse_asp
 from solver.asp.solver import solve as solve_asp
 
@@ -20,6 +22,10 @@ def parse_arguments():
     bt_group.add_argument("--cdnl", action="store_true", help="Conflict-driven backtracking with nogood learning")
 
     parser.add_argument("--instance", type=str, required=True)
+
+    log_group = parser.add_mutually_exclusive_group()
+    log_group.add_argument("--debug", action="store_true", help="Debug-level logging")
+    log_group.add_argument("--info", action="store_true", help="Info-level logging")
 
     return parser.parse_args()
 
@@ -87,6 +93,13 @@ def do_solve_asp(args):
 
 def main():
     args = parse_arguments()
+
+    if args.debug:
+        set_level(Level.DEBUG)
+    elif args.info:
+        set_level(Level.INFO)
+    else:
+        set_level(Level.NONE)
 
     if not os.path.exists(args.instance):
         print("Instance '{}' does not exist.".format(args.instance))
