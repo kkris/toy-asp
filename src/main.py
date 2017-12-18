@@ -84,7 +84,7 @@ def do_solve_asp(args):
     with open(args.instance) as fh:
         rules, expected_solutions = parse_asp(fh.read())
 
-    for solution in solve_asp(rules):
+    for solution in solve_asp(rules, cdnl=args.cdnl):
         if solution not in expected_solutions:
             print("Got unexpected solution '" + stringify_solution(solution) + "'")
         else:
