@@ -1,0 +1,16 @@
+# ASP and SAT solver written in Python
+# by Kristoffer Kleine (01226240)
+# kristoffer.kleine@student.tuwien.ac.at
+
+Usage
+-----
+
+For solving SAT instances given in dimacs format (some available under test/resources/sat):
+
+$ python src/main.py --sat --dpll --instance path/to/instance # dpll-style yields all solutions (if any)
+$ python src/main.py --sat --cdnl --instance path/to/instance # cdnl-style yields first solution (if any)
+
+For ASP solving with the provided three toy examples under tests/resources/asp:
+
+$ python src/main.py --asp --dpll --instance path/to/instance # dpll-style yields all solutions (if any)
+$ python src/main.py --asp --cdnl --instance path/to/instance # cdnl-style yields first solution (if any)
